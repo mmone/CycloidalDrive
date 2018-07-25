@@ -89,6 +89,7 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
             
             global _roller_count, _roller_diameter, _roller_spacing, _create_select, _cam_bearing_outer_dia, \
             _cam_bearing_inner_dia, _ring_bolt_count, _ring_bolt_dia, _disc_bolt_count, _disc_bolt_dia, \
+            _output_pin_diameter, \
             _err_message, _drive_config, _info_message
             
             # Load existing parameter values
@@ -116,19 +117,15 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
                 '',
                 adsk.core.ValueInput.createByReal(_drive_config.roller_spacing)
             )
+            _output_pin_diameter = inputs.addValueInput(
+                'output_pin_diameter',
+                'Output Pin Diameter',
+                _units,
+                adsk.core.ValueInput.createByReal(_drive_config.output_pin_diameter)
+            )
 
-            _create_select = inputs.addDropDownCommandInput('create_select', 'Component Selection', adsk.core.DropDownStyles.CheckBoxDropDownStyle)
-            _create_select_items = _create_select.listItems
-            _create_select_items.add('Ring',         ('Ring' in _drive_config.components))
-            _create_select_items.add('Disc',         ('Disc' in _drive_config.components))
-            _create_select_items.add('Bearing Seat', ('Bearing Seat' in _drive_config.components))
-            _create_select_items.add('Cam',          ('Cam' in _drive_config.components))
-            _create_select_items.add('Cage',         ('Cage' in _drive_config.components))
-            _create_select_items.add('Output Disc',  ('Output Disc' in _drive_config.components))
-            _create_select_items.add('Brace',        ('Brace' in _drive_config.components))
-            _create_select_items.add('Rollers',      ('Rollers' in _drive_config.components))
+            inputs.addTextBoxCommandInput('textbox_1', '', "<br><b>Cam Bearing Settings</b>", 2, True)
 
-            inputs.addTextBoxCommandInput('textbox_1', '', "Cam Bearing Settings", 1, True)   
             _cam_bearing_outer_dia = inputs.addValueInput(
                 'bearing_outer_dia',
                 'Outer Diameter',
@@ -143,7 +140,8 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
                 adsk.core.ValueInput.createByReal(_drive_config.cam_bearing_inner_diameter)
             )
 
-            inputs.addTextBoxCommandInput('textbox_2', '', "Flange Settings", 1, True)   
+            inputs.addTextBoxCommandInput('textbox_2', '', "<br><b>Flange Settings</b>", 2, True) 
+
             _ring_bolt_count = inputs.addIntegerSpinnerCommandInput(
                 'ring_bolt_count',
                 'Number of Ring Bolts',
@@ -171,6 +169,19 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
                 _units,
                 adsk.core.ValueInput.createByReal(_drive_config.disc_bolt_diameter)
             )
+
+            inputs.addTextBoxCommandInput('textbox_0', '', "", 1, True)
+
+            _create_select = inputs.addDropDownCommandInput('create_select', 'Components', adsk.core.DropDownStyles.CheckBoxDropDownStyle)
+            _create_select_items = _create_select.listItems
+            _create_select_items.add('Ring',         ('Ring' in _drive_config.components))
+            _create_select_items.add('Disc',         ('Disc' in _drive_config.components))
+            _create_select_items.add('Bearing Seat', ('Bearing Seat' in _drive_config.components))
+            _create_select_items.add('Cam',          ('Cam' in _drive_config.components))
+            _create_select_items.add('Cage',         ('Cage' in _drive_config.components))
+            _create_select_items.add('Output Disc',  ('Output Disc' in _drive_config.components))
+            _create_select_items.add('Brace',        ('Brace' in _drive_config.components))
+            _create_select_items.add('Rollers',      ('Rollers' in _drive_config.components))
 
             _err_message = inputs.addTextBoxCommandInput('err_message', '', '', 2, True)
             _err_message.isFullWidth = True
@@ -213,6 +224,7 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
             _drive_config.roller_count = _roller_count.value
             _drive_config.roller_diameter = _roller_diameter.value
             _drive_config.roller_spacing = _roller_spacing.value
+            _drive_config.output_pin_diameter = _output_pin_diameter.value
 
             _drive_config.cam_bearing_outer_diameter = _cam_bearing_outer_dia.value
             _drive_config.cam_bearing_inner_diameter = _cam_bearing_inner_dia.value

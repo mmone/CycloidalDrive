@@ -32,6 +32,8 @@ class CycloidalComponent:
         self.disc_bolt_dia = self.config.disc_bolt_diameter
         self.chamfer_disc_bolt_holes = False
 
+        self.output_pin_dia = self.config.output_pin_diameter
+
         self.race_height_factor = 1.05
         self.curve_subsampling = 32
 
@@ -776,7 +778,7 @@ class CycloidalComponent:
                 self.medianDia + self.roller_dia,
                 0.3,
                 self.disc_bolt_circle_radius,
-                0.36 + self.roller_dia * 0.5,
+                self.output_pin_dia + self.roller_dia * 0.5,
                 self.disc_bolt_count
             )
         except Exception as error:

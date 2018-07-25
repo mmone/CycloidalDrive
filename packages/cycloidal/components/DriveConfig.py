@@ -14,6 +14,7 @@ class DriveConfig:
         self.ring_bolt_diameter = 0.21
         self.disc_bolt_count = 8
         self.disc_bolt_diameter = 0.21
+        self.output_pin_diameter = 0.36
         self.components = set(['Ring', 'Disc', 'Bearing Seat', 'Rollers', 'Cage', 'Cam', 'Brace', 'Output Disc'])
 
     def Load(self, pickle_string):
