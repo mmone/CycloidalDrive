@@ -24,10 +24,10 @@ def run(context):
         cmd_def = _ui.commandDefinitions.itemById('adskCycloidalDrive')
         if not cmd_def:
             cmd_def = _ui.commandDefinitions.addButtonDefinition(
-                'adskCycloidalDrive',
+                'mmoneCycloidalDrive',
                 'Cycloidal Drive',
                 'Creates a cycloidal drive component',
-                'Resources/CycloidalDrive') 
+                'resources/CycloidalDrive') 
         
         # Connect to the command created event.
         on_command_created = CommandCreatedHandler()
@@ -35,10 +35,29 @@ def run(context):
         _handlers.append(on_command_created)
         
         # Execute the command.
-        cmd_def.execute()
+        #cmd_def.execute()
+
+        panel = _ui.allToolbarPanels.itemById('SolidScriptsAddinsPanel')
+        cntrl = panel.controls.itemById('mmoneCycloidalDrive')
+        if not cntrl:
+            panel.controls.addCommand(cmd_def)
 
         # prevent this module from being terminate when the script returns, because we are waiting for event handlers to fire
         adsk.autoTerminate(False)
+    except:
+        if _ui:
+            _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+
+def stop(context):
+    try:        
+        # Delete controls and associated command definitions created by this add-ins
+        panel = _ui.allToolbarPanels.itemById('SolidScriptsAddinsPanel')
+        cmd = panel.controls.itemById('mmoneCycloidalDrive')
+        if cmd:
+            cmd.deleteMe()
+        cmdDef = _ui.commandDefinitions.itemById('mmoneCycloidalDrive')
+        if cmdDef:
+            cmdDef.deleteMe() 
     except:
         if _ui:
             _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
@@ -68,7 +87,9 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
             cmd.isExecutedWhenPreEmpted = False
             inputs = cmd.commandInputs
             
-            global _roller_count, _roller_diameter, _roller_spacing, _create_select, _cam_bearing_outer_dia, _cam_bearing_inner_dia, _ring_bolt_count, _ring_bolt_dia, _disc_bolt_count, _disc_bolt_dia, _err_message, _drive_config, _info_message
+            global _roller_count, _roller_diameter, _roller_spacing, _create_select, _cam_bearing_outer_dia, \
+            _cam_bearing_inner_dia, _ring_bolt_count, _ring_bolt_dia, _disc_bolt_count, _disc_bolt_dia, \
+            _err_message, _drive_config, _info_message
             
             # Load existing parameter values
             _drive_config = DriveConfig.DriveConfig()
@@ -151,7 +172,6 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
                 adsk.core.ValueInput.createByReal(_drive_config.disc_bolt_diameter)
             )
 
-
             _err_message = inputs.addTextBoxCommandInput('err_message', '', '', 2, True)
             _err_message.isFullWidth = True
             
@@ -171,9 +191,9 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
             cmd.validateInputs.add(onValidateInputs)
             _handlers.append(onValidateInputs)
 
-            onDestroy = CommandDestroyHandler()
-            cmd.destroy.add(onDestroy)
-            _handlers.append(onDestroy)
+            #onDestroy = CommandDestroyHandler()
+            #cmd.destroy.add(onDestroy)
+            #_handlers.append(onDestroy)
         except:
             if _ui:
                 _ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
