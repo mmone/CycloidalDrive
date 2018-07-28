@@ -150,40 +150,45 @@ class Brace:
             #self.ui.messageBox('len:\n{}'.format(out.bodies.item(b).convexEdges.item(e).length))
             filletEdges.add(out.bodies.item(0).convexEdges.item(e))
         
-        out = helpers.FilletEdgesSimple(self.compo, filletEdges, 0.1)
+        out = helpers.FilletEdgesSimple(self.compo,
+            filletEdges,
+            2 * math.pi * self.bolt_circle_radius / ( self.arm_count * 4.0 )
+        )
         out.bodies.item(0).name = "Brace"
 
-        #self.LighteningHoles(out.bodies.item(0))
+        self.LighteningHoles(out.bodies.item(0),
+            self.bolt_circle_radius * 0.65,
+            self.bolt_circle_radius * 0.15,
+            self.arm_count
+        )
     
-    def LighteningHoles(self, input_body):
+    def LighteningHoles(self, input_body, outer_circle_radius, inner_circle_radius, repeat_count):
         sketch = helpers.CreateSketch(self.compo, "Lightening", True, False)
 
-        top_y = self.bolt_circle_radius * 0.55
-        top_rad = self.bolt_circle_radius * 0.1
-        bottom_y = self.bolt_circle_radius * 0.3
-        bottom_rad = self.bolt_circle_radius * 0.05
+        inner_hole_diameter = 2 * math.pi * inner_circle_radius / ( repeat_count * 2.0 )
+        outer_hole_diameter = 2 * math.pi * outer_circle_radius / ( repeat_count * 2.0 )
 
         top = helpers.AddCircle( sketch,
-            0, top_y, 0,
-            top_rad,
+            0, outer_circle_radius, 0,
+            outer_hole_diameter * 0.5,
             False
         )
 
         bottom = helpers.AddCircle( sketch,
-            0, bottom_y, 0,
-            bottom_rad,
+            0, inner_circle_radius, 0,
+            inner_hole_diameter * 0.5,
             False
         )
 
         left = helpers.AddLine(sketch,
-            -top_rad, top_y, 0,
-            -bottom_rad, bottom_y, 0,
+            -outer_hole_diameter, outer_circle_radius, 0,
+            -inner_hole_diameter, inner_circle_radius, 0,
             False
         )
 
         right = helpers.AddLine(sketch,
-            top_rad, top_y, 0,
-            bottom_rad, bottom_y, 0,
+            outer_hole_diameter, outer_circle_radius, 0,
+            inner_hole_diameter, inner_circle_radius, 0,
             False
         )
 
@@ -233,5 +238,5 @@ class Brace:
         helpers.CircularPattern(self.compo,
             inputEntites,
             self.compo.zConstructionAxis,
-            self.arm_count / 2
+            repeat_count
         )

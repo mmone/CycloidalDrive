@@ -99,21 +99,21 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
                 _drive_config.Load(drive_config_json.value)
 
             # Define the command dialog.
-            _roller_count = inputs.addIntegerSpinnerCommandInput(
-                'roller_count',
-                'Number of Rollers',
-                5, 100, 1,
-                _drive_config.roller_count
-            )
             _roller_diameter = inputs.addValueInput(
                 'roller_diameter',
                 'Roller Diameter',
                 _units,
                 adsk.core.ValueInput.createByReal(_drive_config.roller_diameter)
             )
+            _roller_count = inputs.addIntegerSpinnerCommandInput(
+                'roller_count',
+                'Number of Rollers',
+                5, 100, 1,
+                _drive_config.roller_count
+            )
             _roller_spacing = inputs.addValueInput(
                 'roller_spacing',
-                'Roller Spacing Factor',
+                'Roller Spacing',
                 '',
                 adsk.core.ValueInput.createByReal(_drive_config.roller_spacing)
             )
@@ -170,7 +170,7 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
                 adsk.core.ValueInput.createByReal(_drive_config.disc_bolt_diameter)
             )
 
-            inputs.addTextBoxCommandInput('textbox_0', '', "", 1, True)
+            inputs.addTextBoxCommandInput('textbox_3', '', "", 1, True)
 
             _create_select = inputs.addDropDownCommandInput('create_select', 'Components', adsk.core.DropDownStyles.CheckBoxDropDownStyle)
             _create_select_items = _create_select.listItems
@@ -186,8 +186,14 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
             _err_message = inputs.addTextBoxCommandInput('err_message', '', '', 2, True)
             _err_message.isFullWidth = True
             
-            _info_message = inputs.addTextBoxCommandInput('err_message', '', '', 2, True)
+            _info_message = inputs.addTextBoxCommandInput('info_message', '', '', 2, True)
             _info_message.isFullWidth = True
+
+            inputs.addTextBoxCommandInput(
+                'textbox_4', '',
+                "<a href=\"http://blog.mmone.de/cycloidal-drive/ \"><b>Parameter Documentation</b></a>",
+                1, True
+            )
 
             # Connect the neccesary event handlers.
             onExecute = CommandExecuteHandler()
