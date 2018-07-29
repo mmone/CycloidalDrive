@@ -2,7 +2,7 @@
 
 import adsk.core, adsk.fusion, traceback
 import math
-from .components import Brace, OutputDisc, WheelAssembly
+from .components import Brace, OutputDisc, OutputBearing, WheelAssembly
 from .components import helpers
 from .components import DriveConfig
 from .components import PrinterConfig
@@ -14,25 +14,14 @@ class CycloidalComponent:
         self.ui = ui
         self.config = drive_config
         self.printer_config = printer_config
-        self.roller_count = self.config.roller_count
-        self.roller_dia = self.config.roller_diameter
         # gap between planets as a factor of the planet diameter
-        self.roller_spacing = self.config.roller_spacing
 
-        self.center_bearing_dia = self.config.cam_bearing_outer_diameter
-        self.center_bearing_inner_dia = self.config.cam_bearing_inner_diameter
         self.shaft_dia = 0.3
         self.cage_slot_height = 0.1
 
-        self.ring_bolt_count = self.config.ring_bolt_count
-        self.ring_bolt_dia = self.config.ring_bolt_diameter
         self.chamfer_ring_bolt_holes = False
 
-        self.disc_bolt_count = self.config.disc_bolt_count
-        self.disc_bolt_dia = self.config.disc_bolt_diameter
         self.chamfer_disc_bolt_holes = False
-
-        self.output_pin_dia = self.config.output_pin_diameter
 
         self.race_height_factor = 1.05
         self.curve_subsampling = 32
@@ -42,18 +31,18 @@ class CycloidalComponent:
         newOcc = occs.addNewComponent(mat)
         
         self.compo = adsk.fusion.Component.cast(newOcc.component)
-        self.compo.name = 'Drive (' + str(self.roller_count) + ' rollers @' + str(self.roller_spacing) +')'
+        self.compo.name = 'Drive (' + str(self.config.roller_count) + ' rollers @' + str(self.config.roller_spacing) +')'
         
         self.sketches = self.compo.sketches
         # calculates the diameter from the length of the circle segment intersected with the main planet orbit
-        self.medianDia = self.CalculateMedianDiameter(self.roller_dia, self.roller_count, self.roller_spacing)# self.roller_dia / (2 * math.sin(math.pi / ((1 + self.roller_spacing) * self.roller_count * 2.0)))
+        self.medianDia = self.CalculateMedianDiameter(self.config.roller_diameter, self.config.roller_count, self.config.roller_spacing)# self.config.roller_diameter / (2 * math.sin(math.pi / ((1 + self.config.roller_spacing) * self.config.roller_count * 2.0)))
         self.medianRad = self.medianDia * 0.5
-        self.roller_rad = self.roller_dia * 0.5
-        self.thickness = self.roller_dia * 2.0
+        self.roller_rad = self.config.roller_diameter * 0.5
+        self.thickness = self.config.roller_diameter * 2.0
 
-        self.ring_outer_radius = self.CalculateOuterRadius(self.medianRad, self.roller_dia, self.ring_bolt_dia)# self.medianRad + self.roller_dia + self.ring_bolt_dia * 1.5
-        self.ring_bolt_circle_radius = self.ring_outer_radius - self.ring_bolt_dia * 0.25
-        self.disc_bolt_circle_radius = self.medianRad - (self.roller_rad * 3.0) - self.disc_bolt_dia * 0.5
+        self.ring_outer_radius = self.CalculateOuterRadius(self.medianRad, self.config.roller_diameter, self.config.ring_bolt_diameter)# self.medianRad + self.config.roller_diameter + self.config.ring_bolt_diameter * 1.5
+        self.ring_bolt_circle_radius = self.ring_outer_radius - self.config.ring_bolt_diameter * 0.25
+        self.disc_bolt_circle_radius = self.medianRad - (self.roller_rad * 3.0) - self.config.disc_bolt_diameter * 0.5
         self.slot_radius = self.medianRad + (self.roller_rad * 2.25)
 
         self.DrawConstructionSketch()
@@ -95,7 +84,7 @@ class CycloidalComponent:
         try:
             baseSketch = helpers.CreateSketch(self.compo, "Construction", True, False)
         
-            yOffset =  self.roller_dia / 12.0
+            yOffset =  self.config.roller_diameter / 12.0
             circle = helpers.AddCircle(baseSketch,
                 0, yOffset, 0,
                 self.medianRad
@@ -109,9 +98,9 @@ class CycloidalComponent:
             self.circleCenter.isConstruction = True
             self.circleCenter.isFixed = True
 
-            radOffset = math.pi * 2.0 / self.roller_count
+            radOffset = math.pi * 2.0 / self.config.roller_count
 
-            for i in range(0, self.roller_count):
+            for i in range(0, self.config.roller_count):
               circle = baseSketch.sketchCurves.sketchCircles.addByCenterRadius(
                   adsk.core.Point3D.create(math.sin(radOffset * i) * self.medianRad , (math.cos( radOffset * i) * self.medianRad) + yOffset, 0),
                   self.roller_rad)
@@ -140,17 +129,17 @@ class CycloidalComponent:
     
     def CreateRollerSketch(self):
         try:
-            profileCenter = adsk.core.Point3D.create(0, self.medianRad + self.roller_dia / 12.0, 0)
+            profileCenter = adsk.core.Point3D.create(0, self.medianRad + self.config.roller_diameter / 12.0, 0)
 
             self.rollerSketch = helpers.CreateSketch(self.compo, "Roller", True, False)
             helpers.AddCircle(self.rollerSketch,
-                0, self.medianRad + self.roller_dia / 12.0, 0,
+                0, self.medianRad + self.config.roller_diameter / 12.0, 0,
                 self.roller_rad
             )
 
             self.rollerMirrorLine = self.rollerSketch.sketchCurves.sketchLines.addByTwoPoints(
-                adsk.core.Point3D.create(self.roller_dia, profileCenter.y, 0),
-                adsk.core.Point3D.create(-self.roller_dia, profileCenter.y, 0)
+                adsk.core.Point3D.create(self.config.roller_diameter, profileCenter.y, 0),
+                adsk.core.Point3D.create(-self.config.roller_diameter, profileCenter.y, 0)
             )
 
             self.rollerSketch.isComputeDeferred = False
@@ -178,7 +167,7 @@ class CycloidalComponent:
             helpers.CircularPattern(self.compo,
                 inputEntites,
                 self.circleCenter,
-                self.roller_count
+                self.config.roller_count
             )
         except Exception as error:
             if self.ui:
@@ -201,7 +190,7 @@ class CycloidalComponent:
 
     def BuildRing(self):
         try:
-            groveRootRadius = (self.medianDia + self.GrooveRootToBallCenter(self.roller_dia) + self.roller_rad) * 0.5
+            groveRootRadius = (self.medianDia + self.GrooveRootToBallCenter(self.config.roller_diameter) + self.roller_rad) * 0.5
 
             housingSketch = helpers.CreateSketch(self.compo, "Ring", True, False)
             raceSketch = helpers.CreateSketch(self.compo, "Ring Race", True, False)
@@ -218,18 +207,18 @@ class CycloidalComponent:
             topRailPoints = adsk.core.ObjectCollection.create()
             middleRailPoints = adsk.core.ObjectCollection.create()
 
-            radOffset = 2.0 * math.pi * 0.25 / (self.roller_count + 1)
+            radOffset = 2.0 * math.pi * 0.25 / (self.config.roller_count + 1)
             race_height = self.roller_rad * self.race_height_factor
             rad = 0.0
 
-            div =  (self.roller_count+1) * self.curve_subsampling
+            div =  (self.config.roller_count+1) * self.curve_subsampling
             for i in range(0, div):
                 rad = 2.0 * math.pi * (i / div * 1.0)
-                amp = math.sin(rad * (self.roller_count+1))
+                amp = math.sin(rad * (self.config.roller_count+1))
 
                 o = groveRootRadius - self.TangentFunctionInverse(
-                    self.roller_dia,
-                    self.roller_dia * (1 - (0.25 * ((amp + 1) * 0.5) )),
+                    self.config.roller_diameter,
+                    self.config.roller_diameter * (1 - (0.25 * ((amp + 1) * 0.5) )),
                     race_height
                 )
                 topRailPoints.add( adsk.core.Point3D.create(
@@ -271,6 +260,9 @@ class CycloidalComponent:
                 adsk.fusion.FeatureOperations.JoinFeatureOperation
             )
             
+            #if('Output Bearing' in self.config.components):
+            #   self.CreateOutputRace()
+
             self.CreateRingHoles()
 
             loft = self.compo.features.loftFeatures
@@ -320,12 +312,12 @@ class CycloidalComponent:
             
             helpers.AddCircle(holeSketch,
                 0, self.ring_bolt_circle_radius, 0,
-                self.ring_bolt_dia * 0.5
+                self.config.ring_bolt_diameter * 0.5
             )
 
             helpers.AddCircle(holeSketch,
                 0, self.ring_bolt_circle_radius, 0,
-                self.ring_bolt_dia * 1.2
+                self.config.ring_bolt_diameter * 1.2
             )
 
             holeSketch.isComputeDeferred = False
@@ -361,14 +353,14 @@ class CycloidalComponent:
                
                 chamferOut = helpers.ChamferEdgesSimple(self.compo,
                     chamferEdges,
-                    self.ring_bolt_dia / 3.0
+                    self.config.ring_bolt_diameter / 3.0
                 )
                 inputEntites.add(chamferOut)
 
             out = helpers.CircularPattern(self.compo,
                 inputEntites,
                 self.compo.zConstructionAxis,
-                self.ring_bolt_count
+                self.config.ring_bolt_count
             )
 
             filletEdges = adsk.core.ObjectCollection.create()
@@ -384,6 +376,23 @@ class CycloidalComponent:
                 self.ui.messageBox("Ring Holes Failed : " + str(error)) 
             return None
 
+    def CreateOutputRace(self):
+        sketch = helpers.CreateSketch(self.compo, "Output Bearing", True, False)
+        helpers.AddCircle(sketch, 0,0,0, self.ring_outer_radius * 0.8)
+        helpers.AddCircle(sketch, 0,0,0, self.ring_outer_radius)
+
+        sketch.isComputeDeferred = False
+
+        feat1 =  helpers.OneSideExtrude(
+            self.compo,
+            helpers.CreateCollection(
+                sketch.profiles.item(1)
+            ),
+            self.thickness * 0.5, 0.5,
+            adsk.fusion.ExtentDirections.PositiveExtentDirection,
+            adsk.fusion.FeatureOperations.JoinFeatureOperation
+        )
+
     def CreateRingKeyFeatures(self, top_ring_body, bottom_ring_body):
         try:
             sketch = helpers.CreateSketchOnPlane(self.compo,
@@ -396,13 +405,13 @@ class CycloidalComponent:
             helpers.AddCircle(
                 sketch,
                 0,0,0,
-                self.ring_outer_radius - self.ring_bolt_dia * 0.5
+                self.ring_outer_radius - self.config.ring_bolt_diameter * 0.5
             )
 
             # outer circle
             helpers.AddCircle(sketch, 0,0,0, self.ring_outer_radius)
 
-            rad = 2 * math.pi / self.ring_bolt_count
+            rad = 2 * math.pi / self.config.ring_bolt_count
             sketch.sketchCurves.sketchLines.addByTwoPoints(
                 adsk.core.Point3D.create(0,0,0),
                 adsk.core.Point3D.create(
@@ -435,7 +444,7 @@ class CycloidalComponent:
             helpers.CircularPattern(self.compo,
                 helpers.CreateCollection(slot),
                 self.compo.zConstructionAxis,
-                self.ring_bolt_count
+                self.config.ring_bolt_count
             )
 
             key = helpers.OneSideExtrude(self.compo,
@@ -459,7 +468,7 @@ class CycloidalComponent:
             helpers.CircularPattern(self.compo,
                 helpers.CreateCollection(key, key_fillet),
                 self.compo.zConstructionAxis,
-                self.ring_bolt_count
+                self.config.ring_bolt_count
             )
         except Exception as error:
             if self.ui:
@@ -468,7 +477,7 @@ class CycloidalComponent:
 
     def BuildDisc(self):
         try:
-            groveRootRadius = (self.medianDia - self.GrooveRootToBallCenter(self.roller_dia) - self.roller_rad) * 0.5
+            groveRootRadius = (self.medianDia - self.GrooveRootToBallCenter(self.config.roller_diameter) - self.roller_rad) * 0.5
 
             discSketch = helpers.CreateSketch(self.compo, "Disc", True, False)
             raceSketch = helpers.CreateSketch(self.compo, "Disc Race", True, False)
@@ -479,8 +488,8 @@ class CycloidalComponent:
             # outer ring
             helpers.AddCircle(discSketch, 0,0,0,
                 groveRootRadius + self.TangentFunctionInverse(
-                    self.roller_dia,
-                    self.roller_dia * 3/4.0,
+                    self.config.roller_diameter,
+                    self.config.roller_diameter * 3/4.0,
                     self.roller_rad * self.race_height_factor
                 )
             )
@@ -488,18 +497,18 @@ class CycloidalComponent:
             topRailPoints = adsk.core.ObjectCollection.create()
             middleRailPoints = adsk.core.ObjectCollection.create()
 
-            radOffset = 2.0 * math.pi * 0.25 / (self.roller_count -1)# math.pi * 3/2.0 # 1/4 phase
+            radOffset = 2.0 * math.pi * 0.25 / (self.config.roller_count -1)# math.pi * 3/2.0 # 1/4 phase
             race_height = self.roller_rad * self.race_height_factor
             rad = 0.0
 
-            div =  (self.roller_count-1) * self.curve_subsampling
+            div =  (self.config.roller_count-1) * self.curve_subsampling
             for i in range(0, div):
                 rad = 2.0 * math.pi * (i / div * 1.0)
-                amp = math.sin(rad * (self.roller_count-1))
+                amp = math.sin(rad * (self.config.roller_count-1))
 
                 o = groveRootRadius + self.TangentFunctionInverse(
-                    self.roller_dia,
-                    self.roller_dia * (1 - (0.25 * ((amp + 1) * 0.5) )),
+                    self.config.roller_diameter,
+                    self.config.roller_diameter * (1 - (0.25 * ((amp + 1) * 0.5) )),
                     race_height
                 )
                 topRailPoints.add( adsk.core.Point3D.create(
@@ -565,7 +574,7 @@ class CycloidalComponent:
                 self.compo,
                 profiles,
                 self.roller_rad * self.race_height_factor,
-                (self.thickness * 0.85 - self.roller_dia) * 0.5,
+                (self.thickness * 0.85 - self.config.roller_diameter) * 0.5,
                 adsk.fusion.ExtentDirections.PositiveExtentDirection,
                 adsk.fusion.FeatureOperations.JoinFeatureOperation
             )
@@ -575,7 +584,7 @@ class CycloidalComponent:
                 self.compo,
                 profiles,
                 -self.roller_rad * self.race_height_factor,
-                (self.thickness * 0.85 - self.roller_dia) * 0.5,
+                (self.thickness * 0.85 - self.config.roller_diameter) * 0.5,
                 adsk.fusion.ExtentDirections.NegativeExtentDirection,
                 adsk.fusion.FeatureOperations.JoinFeatureOperation
             )
@@ -605,9 +614,9 @@ class CycloidalComponent:
         try:
             sketch = helpers.CreateSketch(self.compo, "Bearing Seat", False, False)
 
-            helpers.AddCircle(sketch, 0, 0, 0, (self.center_bearing_dia - 0.16) * 0.5)
+            helpers.AddCircle(sketch, 0, 0, 0, (self.config.cam_bearing_outer_diameter - 0.16) * 0.5)
 
-            helpers.AddCircle(sketch, 0, 0, 0, self.center_bearing_dia * 0.5)
+            helpers.AddCircle(sketch, 0, 0, 0, self.config.cam_bearing_outer_diameter * 0.5)
 
             profiles = adsk.core.ObjectCollection.create()
             profiles.add(sketch.profiles.item(0))
@@ -639,7 +648,7 @@ class CycloidalComponent:
             
             helpers.AddCircle(holeSketch,
                 0, self.disc_bolt_circle_radius, 0,
-                self.disc_bolt_dia * 0.5
+                self.config.disc_bolt_diameter * 0.5
             )
 
             holeSketch.isComputeDeferred = False
@@ -664,14 +673,14 @@ class CycloidalComponent:
 
                 chamferOut = helpers.ChamferEdgesSimple(self.compo,
                     chamferEdges,
-                    self.ring_bolt_dia / 3.0
+                    self.config.ring_bolt_diameter / 3.0
                 )
                 inputEntites.add(chamferOut)
 
             helpers.CircularPattern(self.compo,
                 inputEntites,
                 self.compo.zConstructionAxis,
-                self.disc_bolt_count
+                self.config.disc_bolt_count
             )
         except Exception as error:
             if self.ui:
@@ -682,8 +691,8 @@ class CycloidalComponent:
         try:
             carrierSketch = helpers.CreateSketch(self.compo, "Cage", True, False)
 
-            radOffset = math.pi * 2 / self.roller_count
-            yOffset = self.roller_dia / 12.0
+            radOffset = math.pi * 2 / self.config.roller_count
+            yOffset = self.config.roller_diameter / 12.0
 
             helpers.AddCircle(carrierSketch,
                 0, yOffset, 0,
@@ -695,7 +704,7 @@ class CycloidalComponent:
                 self.medianRad - (self.roller_rad * 1.7)
             )    
         
-            for i in range(0, self.roller_count):
+            for i in range(0, self.config.roller_count):
                 helpers.AddCircle(carrierSketch,
                     math.sin(radOffset * i) * self.medianRad , (math.cos( radOffset * i) * self.medianRad) + yOffset, 0,
                     self.roller_rad * 1.1
@@ -721,13 +730,13 @@ class CycloidalComponent:
         try:
             sketch = helpers.CreateSketch(self.compo, "Cam", True, False)
             helpers.AddCircle( sketch,
-                0, self.roller_dia * 1/4.0, 0,
+                0, self.config.roller_diameter * 1/4.0, 0,
                 0.155
             )
 
-            helpers.AddCircle( sketch, 0,0,0, self.center_bearing_inner_dia * 0.5 )
+            helpers.AddCircle( sketch, 0,0,0, self.config.cam_bearing_inner_diameter * 0.5 )
 
-            helpers.AddCircle( sketch, 0,0,0, (self.center_bearing_inner_dia  + 0.08) * 0.5 )
+            helpers.AddCircle( sketch, 0,0,0, (self.config.cam_bearing_inner_diameter  + 0.08) * 0.5 )
 
             sketch.isComputeDeferred = False
 
@@ -761,9 +770,9 @@ class CycloidalComponent:
                 self.compo,
                 self.ui,
                 self.ring_bolt_circle_radius,
-                self.ring_bolt_dia,
-                self.ring_bolt_dia,
-                self.ring_bolt_count
+                self.config.ring_bolt_diameter,
+                self.config.ring_bolt_diameter,
+                self.config.ring_bolt_count
             )
         except Exception as error:
             if self.ui:
@@ -775,24 +784,34 @@ class CycloidalComponent:
             OutputDisc.OutputDisc(
                 self.compo,
                 self.ui,
-                self.medianDia + self.roller_dia,
+                self.medianDia + self.config.roller_diameter,
                 0.3,
                 self.disc_bolt_circle_radius,
-                self.output_pin_dia + self.roller_dia * 0.5,
-                self.disc_bolt_count
+                self.config.output_pin_diameter+ self.config.roller_diameter * 0.5,
+                self.config.disc_bolt_count
             )
         except Exception as error:
             if self.ui:
                 self.ui.messageBox("OutputDisc Failed : " + str(error)) 
             return None
 
+    def CreateOutputBearing(self):
+        OutputBearing.OutputBearing(self.compo,
+            self.ui,
+            self.ring_outer_radius,
+            self.thickness,
+            self.ring_outer_radius,
+            self.config.ring_bolt_diameter,
+            self.config.ring_bolt_count
+        )
+
     def CreateWheelAssembly(self):
         WheelAssembly.WheelAssembly(self.compo,
             self.ui,
             1.5,
-            (self.medianRad + self.roller_dia * 1.8) * 2,
+            (self.medianRad + self.config.roller_diameter * 1.8) * 2,
             (self.medianRad - (self.roller_rad * 3.3)) * 2,
-            0.36 + self.roller_dia * 0.5,
-            self.disc_bolt_count,
+            0.36 + self.config.roller_diameter * 0.5,
+            self.config.disc_bolt_count,
             0.4
         )

@@ -180,6 +180,7 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
             _create_select_items.add('Cam',          ('Cam' in _drive_config.components))
             _create_select_items.add('Cage',         ('Cage' in _drive_config.components))
             _create_select_items.add('Output Disc',  ('Output Disc' in _drive_config.components))
+            _create_select_items.add('Output Bearing',  ('Output Bearing' in _drive_config.components))
             _create_select_items.add('Brace',        ('Brace' in _drive_config.components))
             _create_select_items.add('Rollers',      ('Rollers' in _drive_config.components))
 
@@ -191,7 +192,7 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
 
             inputs.addTextBoxCommandInput(
                 'textbox_4', '',
-                "<a href=\"http://blog.mmone.de/cycloidal-drive/ \"><b>Parameter Documentation</b></a>",
+                "<a href=\"http://blog.mmone.de/cycloidal-drive/\"><b>Parameter Documentation</b></a>",
                 1, True
             )
 

@@ -60,13 +60,13 @@ class Brace:
 
         left = helpers.AddLine(sketch,
             -(self.bolt_dia + 0.4) * 0.5, self.bolt_circle_radius, 0,
-            -hubDia * 0.5, 0, 0,
+            -hubDia * 0.55, 0, 0,
             False
         )
 
         right = helpers.AddLine(sketch,
             (self.bolt_dia + 0.4) * 0.5, self.bolt_circle_radius, 0,
-            hubDia * 0.5, 0, 0,
+            hubDia * 0.55, 0, 0,
             False
         )
 
@@ -181,14 +181,14 @@ class Brace:
         )
 
         left = helpers.AddLine(sketch,
-            -outer_hole_diameter, outer_circle_radius, 0,
-            -inner_hole_diameter, inner_circle_radius, 0,
+            -outer_hole_diameter - 0.1, outer_circle_radius, 0,
+            -inner_hole_diameter - 0.1, inner_circle_radius, 0,
             False
         )
 
         right = helpers.AddLine(sketch,
-            outer_hole_diameter, outer_circle_radius, 0,
-            inner_hole_diameter, inner_circle_radius, 0,
+            outer_hole_diameter + 0.1, outer_circle_radius, 0,
+            inner_hole_diameter + 0.1, inner_circle_radius, 0,
             False
         )
 
