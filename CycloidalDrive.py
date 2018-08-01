@@ -179,8 +179,7 @@ class CommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
             _create_select_items.add('Bearing Seat', ('Bearing Seat' in _drive_config.components))
             _create_select_items.add('Cam',          ('Cam' in _drive_config.components))
             _create_select_items.add('Cage',         ('Cage' in _drive_config.components))
-            _create_select_items.add('Output Disc',  ('Output Disc' in _drive_config.components))
-            _create_select_items.add('Output Bearing',  ('Output Bearing' in _drive_config.components))
+            _create_select_items.add('Output',       ('Output' in _drive_config.components))
             _create_select_items.add('Brace',        ('Brace' in _drive_config.components))
             _create_select_items.add('Rollers',      ('Rollers' in _drive_config.components))
 
@@ -249,7 +248,7 @@ class CommandExecuteHandler(adsk.core.CommandEventHandler):
             attributes.add('CycloidalDrive', 'drive_config', _drive_config.ToString())
 
             # Create the gear.
-            printer_config = PrinterConfig.PrinterConfig(0.04, 0.02)
+            printer_config = PrinterConfig.PrinterConfig(0.4, 0.2)
             c = CycloidalComponent.CycloidalComponent(
                     design,
                     _ui,

@@ -1,6 +1,6 @@
 # Copyright (C) 2018  Martin Muehlhaeuser <github@mmone.de>
 
-import adsk.core, adsk.fusion
+import adsk.core, adsk.fusion, math
 
 def CreateCollection(*entities):
     collection = adsk.core.ObjectCollection.create()
@@ -8,17 +8,19 @@ def CreateCollection(*entities):
         collection.add(entity)
     return collection
 
-def SymmetricExtrude(component, profiles, thickness, operation, bodies = None):
+def SymmetricExtrude(component, profiles, thickness, operation, offset = None, bodies = None):
     extrudeInput = component.features.extrudeFeatures.createInput(
         profiles,
         operation
     )
     extrudeInput.setSymmetricExtent(adsk.core.ValueInput.createByReal(thickness), True)
+    if offset:
+        extrudeInput.startExtent = adsk.fusion.OffsetStartDefinition.create( adsk.core.ValueInput.createByReal(offset))
+    
+    if bodies:
+        extrudeInput.participantBodies = bodies
+
     feature = component.features.extrudeFeatures.add(extrudeInput)
-    if(bodies != None):
-        feature.timelineObject.rollTo(True)
-        feature.participantBodies = bodies
-        feature.timelineObject.rollTo(False)
     return feature
 
 
@@ -37,12 +39,15 @@ def OneSideExtrude(component, profiles, offset, extend, direction, operation, bo
         adsk.core.ValueInput.createByReal(offset)
     )
 
+    if bodies:
+        extrudeInput.participantBodies = bodies
+
     feature = component.features.extrudeFeatures.add(extrudeInput)
 
-    if(bodies != None):
-        feature.timelineObject.rollTo(True)
-        feature.participantBodies = bodies
-        feature.timelineObject.rollTo(False)
+    #if bodies:
+    #    feature.timelineObject.rollTo(True)
+    #    feature.participantBodies = bodies
+    #    feature.timelineObject.rollTo(False)
     return feature
 
 def CircularPattern(component, entities, axis, quantity, compute_option = None):
@@ -75,6 +80,16 @@ def Combine(
     )
     return component.features.combineFeatures.add(create_input)
 
+def Revolve(component, profile, axis, operation, bodies = None):
+    feature_input = component.features.revolveFeatures.createInput(profile, axis, operation)
+    feature_input.setAngleExtent(False,  adsk.core.ValueInput.createByReal(2.0 * math.pi))
+    feature = component.features.revolveFeatures.add(feature_input)
+    if bodies:
+        feature.timelineObject.rollTo(True)
+        feature.participantBodies = bodies
+        feature.timelineObject.rollTo(False)
+    return feature
+
 def ChamferEdgesSimple(component, edges, chamfer_width):
     chamferInput = component.features.chamferFeatures.createInput(
         edges,
@@ -88,8 +103,11 @@ def FilletEdgesSimple(component, edges, radius):
     filletInput.addConstantRadiusEdgeSet(edges, adsk.core.ValueInput.createByReal(radius), False)
     return component.features.filletFeatures.add(filletInput)
 
-def CreateSketch(component, name, deferred, visible):
-    sketch = component.sketches.add(component.xYConstructionPlane)
+def CreateSketch(component, name, deferred, visible, plane = None):
+    if not plane:
+        plane = component.xYConstructionPlane
+        
+    sketch = component.sketches.add(plane)
     sketch.name = name
     sketch.isComputeDeferred = deferred
     sketch.isLightBulbOn = visible

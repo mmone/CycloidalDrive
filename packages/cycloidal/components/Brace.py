@@ -14,6 +14,7 @@ class Brace:
 
         occs = parentCompo.occurrences
         mat = adsk.core.Matrix3D.create()
+        mat.translation = adsk.core.Vector3D.create(0.0, 0.0, -0.7)
         newOcc = occs.addNewComponent(mat)
 
         self.compo = adsk.fusion.Component.cast(newOcc.component)
@@ -120,7 +121,9 @@ class Brace:
         profiles.add(sketch.profiles.item(3))
         feat2 = helpers.OneSideExtrude(
             self.compo,
-            profiles, 0, 0.5,
+            profiles,
+            0,
+            0.15,
             adsk.fusion.ExtentDirections.PositiveExtentDirection,
             adsk.fusion.FeatureOperations.JoinFeatureOperation
         )
