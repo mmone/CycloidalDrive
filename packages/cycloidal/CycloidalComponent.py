@@ -150,7 +150,7 @@ class CycloidalComponent:
         try:
             profileCenter = adsk.core.Point3D.create(0, self.median_radius + self.config.roller_diameter / 12.0, 0)
 
-            self.roller_sketch = helpers.CreateSketch(self.compo, "Roller", True, False)
+            self.roller_sketch = helpers.CreateSketch(self.compo, "Roller", True, False, self.compo.yZConstructionPlane)
             helpers.AddCircle(self.roller_sketch,
                 0, self.median_radius + self.config.roller_diameter / 12.0, 0,
                 self.roller_rad
@@ -226,7 +226,6 @@ class CycloidalComponent:
             helpers.AddCircle(housingSketch, 0,0,0, self.ring_outer_radius)
             
             topRailPoints = adsk.core.ObjectCollection.create()
-            middleRailPoints = adsk.core.ObjectCollection.create()
 
             radOffset = 2.0 * math.pi * 0.25 / (self.config.roller_count + 1)
             rad = 0.0
@@ -246,27 +245,19 @@ class CycloidalComponent:
                     math.cos(rad + radOffset) * o,
                     half_race_height)
                 )
-                middleRailPoints.add( adsk.core.Point3D.create(
-                    math.sin(rad + radOffset) * groveRootRadius,
-                    math.cos(rad + radOffset) * groveRootRadius,
-                    0)
-                )
 
             top_1    = raceSketch.sketchCurves.sketchLines.addByTwoPoints(topRailPoints.item(0), topRailPoints.item(1))
-            middle_1 = raceSketch.sketchCurves.sketchLines.addByTwoPoints(middleRailPoints.item(0), middleRailPoints.item(1))
 
             first_point_top = top_1.startSketchPoint
-            first_point_middle = middle_1.startSketchPoint
 
             for i in range(2, topRailPoints.count):
                 top_1 = raceSketch.sketchCurves.sketchLines.addByTwoPoints(top_1.endSketchPoint, topRailPoints.item(i))
                 top_1.isFixed = True
-                middle_1 = raceSketch.sketchCurves.sketchLines.addByTwoPoints(middle_1.endSketchPoint, middleRailPoints.item(i))
-                middle_1.isFixed = True
 
             raceSketch.sketchCurves.sketchLines.addByTwoPoints(top_1.endSketchPoint, first_point_top)
-            raceSketch.sketchCurves.sketchLines.addByTwoPoints(middle_1.endSketchPoint, first_point_middle)
             
+            helpers.AddCircle(raceSketch, 0,0,0, groveRootRadius, True)
+
             raceSketch.isComputeDeferred = False
             housingSketch.isComputeDeferred = False
 
@@ -513,7 +504,6 @@ class CycloidalComponent:
             )
 
             topRailPoints = adsk.core.ObjectCollection.create()
-            middleRailPoints = adsk.core.ObjectCollection.create()
 
             radOffset = 2.0 * math.pi * 0.25 / (self.config.roller_count -1)# math.pi * 3/2.0 # 1/4 phase
             rad = 0.0
@@ -533,27 +523,19 @@ class CycloidalComponent:
                     math.cos(rad - radOffset) * o,
                     half_race_height)
                 )
-                middleRailPoints.add( adsk.core.Point3D.create(
-                    math.sin(rad - radOffset) * groveRootRadius,
-                    math.cos(rad - radOffset) * groveRootRadius,
-                    0)
-                )
-            
+
             top_1    = raceSketch.sketchCurves.sketchLines.addByTwoPoints(topRailPoints.item(0), topRailPoints.item(1))
-            middle_1 = raceSketch.sketchCurves.sketchLines.addByTwoPoints(middleRailPoints.item(0), middleRailPoints.item(1))
 
             first_point_top = top_1.startSketchPoint
-            first_point_middle = middle_1.startSketchPoint
 
             for i in range(2, topRailPoints.count):
                 top_1 = raceSketch.sketchCurves.sketchLines.addByTwoPoints(top_1.endSketchPoint, topRailPoints.item(i))
                 top_1.isFixed = True
-                middle_1 = raceSketch.sketchCurves.sketchLines.addByTwoPoints(middle_1.endSketchPoint, middleRailPoints.item(i))
-                middle_1.isFixed = True
 
             raceSketch.sketchCurves.sketchLines.addByTwoPoints(top_1.endSketchPoint, first_point_top)
-            raceSketch.sketchCurves.sketchLines.addByTwoPoints(middle_1.endSketchPoint, first_point_middle)
-            
+
+            helpers.AddCircle(raceSketch, 0,0,0, groveRootRadius, True)
+
             raceSketch.isComputeDeferred = False
             discSketch.isComputeDeferred = False
 
