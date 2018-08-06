@@ -2,7 +2,7 @@
 
 import adsk.core, adsk.fusion, traceback
 import math
-from .components import Brace, OutputDisc, OutputBearing, WheelAssembly
+from .components import Brace, OutputDisc, WheelAssembly
 from .components import helpers
 from .components import DriveConfig
 from .components import PrinterConfig
@@ -824,16 +824,6 @@ class CycloidalComponent:
             if self.ui:
                 self.ui.messageBox("OutputDisc Failed : " + str(error))
             return None
-
-    def CreateOutputBearing(self):
-        OutputBearing.OutputBearing(self.compo,
-            self.ui,
-            self.ring_outer_radius,
-            self.thickness,
-            self.ring_outer_radius,
-            self.config.ring_bolt_diameter,
-            self.config.ring_bolt_count
-        )
 
     def CreateWheelAssembly(self):
         WheelAssembly.WheelAssembly(self.compo,
