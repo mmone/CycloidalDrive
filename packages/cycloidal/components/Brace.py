@@ -36,7 +36,7 @@ class Brace:
 
         boltRing = helpers.AddCircle( sketch,
             0, self.bolt_circle_radius, 0,
-            self.bolt_dia * 1.2,
+            self.bolt_dia * 0.5 + 3 * 0.04,
             False
         )
 
@@ -142,7 +142,7 @@ class Brace:
         profiles.add(sketch.profiles.item(2))
         out = helpers.OneSideExtrude(
             self.compo,
-            profiles, 0, 0.2,
+            profiles, 0, 0.1,
             adsk.fusion.ExtentDirections.PositiveExtentDirection,
             adsk.fusion.FeatureOperations.JoinFeatureOperation
         )

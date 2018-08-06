@@ -91,7 +91,7 @@ class OutputDisc:
             self.ring_inner_radius - self.cage_width * 0.5 - self.cage_race_gap,
             0,
             0,
-            self.drive_config.output_bearing_ball_diameter * 0.5,
+            self.drive_config.output_bearing_ball_diameter * 0.5 + 0.01,
             True
         )
         helpers.Revolve(self.compo,

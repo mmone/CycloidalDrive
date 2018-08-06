@@ -111,7 +111,37 @@ class CycloidalComponent:
               circle.isConstruction = True
               circle.isFixed = True
 
+            #######
+            groveRootRadius = (self.median_dia  + self.GrooveRootToBallCenter(self.config.roller_diameter) + self.roller_rad) * 0.5
+            topRailPoints = adsk.core.ObjectCollection.create()
+            radOffset = 2.0 * math.pi * 0.25 / (self.config.roller_count + 1)
+            rad = 0.0
+
+            div =  (self.config.roller_count+1) * 10
+            for i in range(0, div):
+                rad = 2.0 * math.pi * (i / div * 1.0)
+                amp = math.sin(rad * (self.config.roller_count+1))
+
+                o = self.median_radius + self.config.roller_diameter * amp * 0.125# (1 - (0.25 * ((amp + 1) * 0.5) ))
+
+                topRailPoints.add( adsk.core.Point3D.create(
+                    math.sin(rad + radOffset) * o,
+                    math.cos(rad + radOffset) * o + yOffset,
+                    0)
+                )
+
+            top_1    = baseSketch.sketchCurves.sketchLines.addByTwoPoints(topRailPoints.item(0), topRailPoints.item(1))
+
+            first_point_top = top_1.startSketchPoint
+
+            for i in range(2, topRailPoints.count):
+                top_1 = baseSketch.sketchCurves.sketchLines.addByTwoPoints(top_1.endSketchPoint, topRailPoints.item(i))
+                top_1.isFixed = True
+
+            baseSketch.sketchCurves.sketchLines.addByTwoPoints(top_1.endSketchPoint, first_point_top)
+            
             baseSketch.isComputeDeferred = False
+
         except Exception as error:
             if self.ui:
                 self.ui.messageBox("drawConstructionSketch Failed : " + str(error))

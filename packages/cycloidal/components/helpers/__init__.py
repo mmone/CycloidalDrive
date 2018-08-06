@@ -135,3 +135,22 @@ def AddLine(sketch, x1, y1, z1, x2, y2, z2, fixed = True):
     )
     line.isFixed = fixed
     return line
+'''
+def AddHex(sketch, width):
+    inc = math.pi * 2.0 / 6.0
+    r = w / ( 2 * math.cos(math.pi * 2.0 / 12.0))
+    p0 = adsk.core.Point3D.create(math.sin(i * inc) * r, math.sin(i * inc) * r, 0)
+
+    line = sketch.sketchCurves.sketchLines.addByTwoPoints(
+        adsk.core.Point3D.create(math.sin(i * inc) * r, math.sin(i * inc) * r, 0),
+        adsk.core.Point3D.create(math.sin((i+1) * inc) * r, math.sin((i+1) * inc) * r, 0)
+    )
+    for i in range(0, 6):
+        line = sketch.sketchCurves.sketchLines.addByTwoPoints(
+            adsk.core.Point3D.create(math.sin(i * inc) * r, math.sin(i * inc) * r, 0),
+            adsk.core.Point3D.create(math.sin((i+1) * inc) * r, math.sin((i+1) * inc) * r, 0)
+        )
+            adsk.core.Point3D.create(x1, y1, z1)
+            top_1.endSketchPoint, first_point_top)
+        sketch.sketchCurves.sketchLines.addByTwoPoints(middle_1.endSketchPoint, first_point_middle)
+    '''
